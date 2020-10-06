@@ -1,8 +1,14 @@
-import connectionSQLite as cs
+import sqlite3
+
+connection = sqlite3.connect('data.db')
+cursor = connection.cursor()
 
 
 
-conn = cs.Connect()
-usertable = "CREATE TABLE IF NOT EXISTS users (id text PRIMARY KEY, username text, password text)"
-conn.execute(usertable)
-conn.close()
+create_table = "CREATE TABLE IF NOT EXISTS users (id text PRIMARY KEY, username text  unique, email text  unique, password  text)"
+cursor.execute(create_table)
+
+
+connection.commit()
+
+connection.close()
