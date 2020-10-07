@@ -4,7 +4,7 @@ from flask_jwt import JWT, jwt_required
 from appsettings import *
 
 from securityJWT import authenticate, identity
-from user import UserRegister
+from resources.user import UserRegister
 
 app = Flask(__name__)
 

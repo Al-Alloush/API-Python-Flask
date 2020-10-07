@@ -1,6 +1,6 @@
 from werkzeug.security import safe_str_cmp # safe string compare
-from user import User
-from myFunctions import *
+from models.user import UserModel as User
+from global_functions import Verify_Password
 
 # in 
 def authenticate(username, password):
@@ -9,8 +9,6 @@ def authenticate(username, password):
     # compare if password is right
     if user and Verify_Password(user.password, password):
         return user
-
-
 
 def identity(payload):
     user_id = payload['identity']
