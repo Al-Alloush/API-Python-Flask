@@ -1,7 +1,7 @@
 import sqlite3
 from flask_restful import Resource, reqparse
 import uuid
-from models.user import UserModel as User
+from models.user import UserModel
 from global_functions import Hashing_Password
 
 class UserRegister(Resource):
@@ -27,18 +27,19 @@ class UserRegister(Resource):
     def post(self):
         data = UserRegister.parser.parse_args()
 
-        if User.find_user(data['username']) is not None or User.find_user(data['email']) is not None:
+        # check if username or email not exit.
+        user = UserModel.find_user(data['username']) 
+        if user is None:
+            user = UserModel.find_user(data['email'])
+        if user is not None:
             return {"message": "this user is existing"}, 400
 
-        connection = sqlite3.connect('data.db')
-        cursor = connection.cursor()
-
-        hashed_password = Hashing_Password(data['password'])
-        query = "INSERT INTO {table} VALUES (?, ?, ?, ?)".format(table=self.TABLE_NAME)
-        cursor.execute(query, (str(uuid.uuid4()), data['username'], data['email'], str(hashed_password)))
-
-        # afetr insert save changes
-        connection.commit()
-        connection.close()
-
-        return {"message": "User created successfully."}, 201
+        # create an object from UserModel to save this user in database
+        user = UserModel(str(uuid.uuid4()), data["username"],data["email"],Hashing_Password(data["password"]))
+        
+        try:
+            user.save_to_db()
+            return {"message": "User created successfully."}, 201
+        except expression as ex:
+            return {"message": "Servir Error"}, 500
+        

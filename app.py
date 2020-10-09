@@ -7,9 +7,21 @@ from securityJWT import authenticate, identity
 from resources.user import UserRegister
 
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
+
+'''
+flask-SQLAlchemy tracking every change that made to the SQLAlchemy session, and that took some resources. 
+And SQLAlchemy the main library itself has its own modification tracker which is a bit better.
+this is only changing the flask-SQLAlchemy extensions behaviours not SQLAlchemy. '''
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 app.secret_key = APP_SECRET_KEY
 api = Api(app)
+
+# to create all tables with the first requst in app
+@app.before_first_request
+def create_tables():
+    db.create_all()
 
 # JWT provide an auth endpoint to verify the user, with this login return a token, 
 # this token contains the user's Id and authentication code
@@ -39,4 +51,6 @@ def home():
 
 
 if __name__ == '__main__':
+    from db_sql_alchemy import db
+    db.init_app(app)
     app.run(port="5000", host="0.0.0.0") # http://localhost:5000
