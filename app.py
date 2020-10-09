@@ -5,6 +5,7 @@ from appsettings import *
 
 from securityJWT import authenticate, identity
 from resources.user import UserRegister
+from resources.product import Product, ProductList
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
@@ -31,6 +32,8 @@ jwt = JWT(app, authenticate, identity)
 
 
 api.add_resource(UserRegister, '/register')
+api.add_resource(Product, '/product/<string:name>')
+api.add_resource(ProductList, '/products')
 
 
 
