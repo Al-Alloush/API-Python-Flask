@@ -10,6 +10,11 @@ class Product(Resource):
                         required=True,
                         help="This field cannot be left blank!"
                         )
+    parser.add_argument('shope_id',
+                        type=int,
+                        required=True,
+                        help="Every Product needs a shope_id."
+                        )
 
     def get(self, name):
         product = ProductModel.find_by_name(name)
@@ -23,7 +28,7 @@ class Product(Resource):
 
         data = Product.parser.parse_args()
 
-        product = ProductModel(name, data['price'])
+        product = ProductModel(name, **data)
 
         try:
             product.save_to_db()
@@ -47,7 +52,7 @@ class Product(Resource):
         if product:
             product.price = data['price']
         else:
-            product = ProductModel(name, data['price'])
+            product = ProductModel(name, **data)
 
         product.save_to_db()
 

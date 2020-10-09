@@ -6,11 +6,14 @@ class ProductModel(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), unique=True)
     price = db.Column(db.Float(precision=2))
+    shope_id = db.Column(db.Integer, db.ForeignKey('shopes.id'))
+    shope = db.relationship('ShopeModel')
 
     
-    def __init__(self, name, price):
+    def __init__(self, name, price, shope_id):
         self.name = name
         self.price = price
+        self.shope_id = shope_id
 
     def json(self):
         return {'id': self.id, 'name': self.name, 'price': self.price}
