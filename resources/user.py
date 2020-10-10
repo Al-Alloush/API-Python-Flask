@@ -2,7 +2,8 @@ import sqlite3
 from flask_restful import Resource, reqparse
 import uuid
 from models.user import UserModel
-from global_functions import Hashing_Password
+from flask_jwt_extended import create_access_token, create_refresh_token
+from global_functions import Hashing_Password, Verify_Password
 
 class UserRegister(Resource):
     TABLE_NAME = 'users'
@@ -43,3 +44,37 @@ class UserRegister(Resource):
         except expression as ex:
             return {"message": "Servir Error"}, 500
         
+
+class UserLogin(Resource):
+
+    parser = reqparse.RequestParser()
+    parser.add_argument('usernameOrEmail',
+                        type=str,
+                        required=True,
+                        help="This field cannot be left blank!"
+                        )
+    parser.add_argument('password',
+                        type=str,
+                        required=True,
+                        help="This field cannot be left blank!"
+                        )
+
+    def post(self):
+        data = UserLogin.parser.parse_args()
+
+        user = UserModel.find_user(data['usernameOrEmail'])
+
+
+        # this is what the `authenticate()` function did in securityJWT.py
+        if user and Verify_Password(user.password, data['password']):
+            # identity= is what the identity() function did in securityJWT.py, now stored in the JWT
+            access_token = create_access_token(identity=user.id, fresh=True) 
+            refresh_token = create_refresh_token(user.id)
+            return {
+                "username": user.username,
+                "email": user.email,
+                'access_token': access_token,
+                'refresh_token': refresh_token
+            }, 200
+
+        return {"message": "Invalid Credentials!"}, 401

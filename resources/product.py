@@ -1,7 +1,7 @@
 from flask_restful import Resource, reqparse
 from flask_jwt import jwt_required
 from models.product import ProductModel
-
+from flask_jwt_extended import jwt_optional, get_jwt_identity
 
 class Product(Resource):
     parser = reqparse.RequestParser()
@@ -60,7 +60,18 @@ class Product(Resource):
 
 
 class ProductList(Resource):
+    @jwt_optional
     def get(self):
-        #return {'products': list(map(lambda x: x.json(), ProductModel.query.all()))}
+
+        user_id =get_jwt_identity()
         # a generally list comprehension, it is a little bit faster, a little bit more readable
-        return {'products': [ x.json() for x in ProductModel.find_all() ]}
+        products = [ product.json() for product in ProductModel.find_all() ]
+        if user_id:
+            return{'products': products}, 200
+        
+        return {
+            'products': [product['name'] for product in products],
+            'message': "More info if login"
+        },200
+
+        #return {'products': list(map(lambda x: x.json(), ProductModel.query.all()))}

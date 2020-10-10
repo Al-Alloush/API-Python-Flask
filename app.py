@@ -1,10 +1,10 @@
 from flask import Flask
 from flask_restful import Resource, Api
-from flask_jwt import JWT, jwt_required
+#from flask_jwt import JWT, jwt_required
+from flask_jwt_extended import JWTManager, jwt_required, get_jwt_identity, get_jwt_claims
 from appsettings import *
-
-from securityJWT import authenticate, identity
-from resources.user import UserRegister
+from models.user import UserModel
+from resources.user import UserRegister, UserLogin
 from resources.product import Product, ProductList
 from resources.shope import Shope, ShopeList
 
@@ -28,23 +28,36 @@ def create_tables():
 
 # JWT provide an auth endpoint to verify the user, with this login return a token, 
 # this token contains the user's Id and authentication code
-jwt = JWT(app, authenticate, identity)
+# jwt = JWT(app, authenticate, identity)
+jwt = JWTManager(app)
 
 
 
 api.add_resource(Shope, '/shope/<string:name>')
 api.add_resource(ShopeList, '/shopes')
 api.add_resource(UserRegister, '/register')
+api.add_resource(UserLogin, '/login')
 api.add_resource(Product, '/product/<string:name>')
 api.add_resource(ProductList, '/products')
 
+# add claims to access token
+@jwt.user_claims_loader
+def add_claims_to_jwt(identity):
+    user = UserModel.find_by_id(identity)
+    return {
+        "username":user.username,
+        "email": user.email
+    }
 
 
 class TestAuthentecation(Resource):
     # Get this functionality if the authorization token is validated
-    @jwt_required()
+    @jwt_required
     def get (self):
-        return {"message": " get with Authentecation successfully."}, 201
+        id =get_jwt_identity()
+        user = UserModel.find_by_id(get_jwt_identity())# get the identity from access tocken, here is user.id
+        claims = get_jwt_claims() 
+        return {"message": f" get with Authentecation successfully: {user.username}, {claims['email']}"}, 201
 
 api.add_resource(TestAuthentecation, '/test')
 
