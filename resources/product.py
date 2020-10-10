@@ -61,4 +61,6 @@ class Product(Resource):
 
 class ProductList(Resource):
     def get(self):
-        return {'products': list(map(lambda x: x.json(), ProductModel.query.all()))}
+        #return {'products': list(map(lambda x: x.json(), ProductModel.query.all()))}
+        # a generally list comprehension, it is a little bit faster, a little bit more readable
+        return {'products': [ x.json() for x in ProductModel.find_all() ]}

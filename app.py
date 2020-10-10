@@ -10,6 +10,7 @@ from resources.shope import Shope, ShopeList
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
+app.config['PROPAGATE_EXCEPTIONS'] = True # if False, it will retrun for all errors 500 error
 
 '''
 flask-SQLAlchemy tracking every change that made to the SQLAlchemy session, and that took some resources. 

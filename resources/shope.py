@@ -53,4 +53,6 @@ class Shope(Resource):
 
 class ShopeList(Resource):
     def get(self):
-        return {'shopes': list(map(lambda x: x.json(), ShopeModel.query.all()))}
+        #return {'shopes': list(map(lambda x: x.json(), ShopeModel.query.all()))}
+        # a generally list comprehension, it is a little bit faster, a little bit more readable
+        return {'products': [ x.json() for x in ShopeModel.find_all() ]}
