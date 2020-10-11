@@ -2,7 +2,12 @@ import sqlite3
 from flask_restful import Resource, reqparse
 import uuid
 from models.user import UserModel
-from flask_jwt_extended import create_access_token, create_refresh_token
+from flask_jwt_extended import(
+    create_access_token, 
+    create_refresh_token, 
+    jwt_refresh_token_required, 
+    get_jwt_identity
+)
 from global_functions import Hashing_Password, Verify_Password
 
 class UserRegister(Resource):
@@ -78,3 +83,18 @@ class UserLogin(Resource):
             }, 200
 
         return {"message": "Invalid Credentials!"}, 401
+
+class TokenRefresh(Resource):
+    @jwt_refresh_token_required
+    def get(self):
+        """
+        Get a new access token without requiring username and password—only the 'refresh token'
+        provided in the /login endpoint.
+        Note that refreshed access tokens have a `fresh=False`, which means that the user may have not
+        given us their username and password for potentially a long time (if the token has been
+        refreshed many times over).
+        """
+        current_user = get_jwt_identity()
+        # fresh is false this token is not like the token in UserLogin class, this token is Less valid
+        new_token = create_access_token(identity=current_user, fresh=False) 
+        return {'access_token': new_token}, 200
