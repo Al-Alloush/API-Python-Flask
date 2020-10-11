@@ -3,3 +3,4 @@ Flask-RESTful
 Flask-JWT
 flask_sqlalchemy
 flask_jwt_extended
+redis

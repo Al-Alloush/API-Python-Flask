@@ -11,15 +11,20 @@ from flask_jwt_extended import(
 ) 
 from appsettings import *
 from models.user import UserModel
-from resources.user import UserRegister, UserLogin, TokenRefresh
+from resources.user import UserRegister, UserLogin, TokenRefresh, UserLogout
 from resources.product import Product, ProductList
 from resources.shope import Shope, ShopeList
+from libraries import *
 
 app = Flask(__name__)
+
+
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
 app.config['PROPAGATE_EXCEPTIONS'] = True # if False, it will retrun for all errors 500 error
-#app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(7) # 7 days to expire, or False to not expire at all
-
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(minutes = ACCESS_EXPIRES_m) 
+app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(days = REFRESH_EXPIRES_d)  
+app.config['JWT_BLACKLIST_ENABLED'] = True # enable blacklist feature
+app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh'] # allow blacklisting for access and refresh tokens
 
 '''
 flask-SQLAlchemy tracking every change that made to the SQLAlchemy session, and that took some resources. 
@@ -42,10 +47,12 @@ jwt = JWTManager(app)
 
 
 
+
 api.add_resource(Shope, '/shope/<string:name>')
 api.add_resource(ShopeList, '/shopes')
 api.add_resource(UserRegister, '/register')
 api.add_resource(UserLogin, '/login')
+api.add_resource(UserLogout, '/logout')
 api.add_resource(Product, '/product/<string:name>')
 api.add_resource(ProductList, '/products')
 api.add_resource(TokenRefresh, '/refresh')
@@ -91,6 +98,23 @@ def token_not_fresh_callback():
     return jsonify({
         'description': 'The token is not fresh.',
         'error': 'fresh_token_required'
+    }), 401
+
+# This method will check if a token is blacklisted, and will be called automatically when blacklist is enabled
+@jwt.token_in_blacklist_loader
+def check_if_token_in_blacklist(decrypted_token):
+    jti = decrypted_token['jti']
+    entry = revoked_store.get(jti)
+    if entry is None:
+        return True
+    return entry == 'true'
+
+# when user log out in token lifetime, set this token is revoked, then clint can't call fuctions with old Token.
+@jwt.revoked_token_loader
+def revoked_token_callback():
+    return jsonify({
+        'description': 'The token has been revoked.',
+        'error': 'token_revoked'
     }), 401
 
 

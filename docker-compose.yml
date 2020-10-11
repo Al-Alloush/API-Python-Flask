@@ -16,8 +16,37 @@ services:
             - "5000:5000"
         networks: 
             net_:
+    #--------------------------
+    redis:
+        image: "redis:latest"
+        container_name: redis
+        hostname: redis
+        volumes:
+          - type: volume
+            source: redisdata
+            target: /data
+        ports:
+          - "6379:6379"
+        networks:
+            net_:
+        #restart: always
+    #--------------------------
+    redis-commander:
+        image: rediscommander/redis-commander:latest
+        container_name: redis-commander
+        hostname: redis-commander
+        # without this: Redis error Error: connect ECONNREFUSED 127.0.0.1:6379
+        environment:
+            - REDIS_HOSTS=local:redis:6379
+        ports:
+            - "8081:8081"
+        networks:
+            net_:
+        #restart: always
+    #--------------------------
 
-
+volumes:
+    redisdata:
 
 networks: 
     # create Network By Default with directory name
