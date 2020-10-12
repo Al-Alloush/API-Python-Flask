@@ -1,6 +1,10 @@
 from flask_restful import Resource, reqparse
 from models.shope import ShopeModel
-
+from flask_jwt_extended import(
+    jwt_required, 
+    fresh_jwt_required
+) 
+from modifyFunctions import *
 
 class Shope(Resource):
     parser = reqparse.RequestParser()
@@ -16,6 +20,9 @@ class Shope(Resource):
             return shope.json()
         return {'message': 'shope not found'}, 404
 
+    
+    @jwt_required
+    @make_secure("admin")
     def post(self, name):
         if ShopeModel.find_by_name(name):
             return {'message': "A shope with name '{}' already exists.".format(name)}, 400
@@ -28,6 +35,8 @@ class Shope(Resource):
 
         return shope.json(), 201
 
+    @jwt_required
+    @make_secure("admin")
     def put(self, name):
         data = Shope.parser.parse_args()
         shope = ShopeModel.find_by_name(name)
@@ -43,6 +52,8 @@ class Shope(Resource):
 
         return shope.json()
 
+    @jwt_required
+    @make_secure("admin")
     def delete(self, name):
         shope = ShopeModel.find_by_name(name)
         if shope:
