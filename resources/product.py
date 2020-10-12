@@ -1,7 +1,13 @@
 from flask_restful import Resource, reqparse
 from flask_jwt import jwt_required
 from models.product import ProductModel
-from flask_jwt_extended import jwt_optional, get_jwt_identity
+from flask_jwt_extended import(
+    jwt_required, 
+    fresh_jwt_required,
+    jwt_optional,
+    get_jwt_identity
+) 
+from modifyFunctions import *
 
 class Product(Resource):
     parser = reqparse.RequestParser()
@@ -22,6 +28,8 @@ class Product(Resource):
             return product.json()
         return {'message': 'product not found'}, 404
 
+    @jwt_required
+    @make_secure("admin")
     def post(self, name):
         if ProductModel.find_by_name(name):
             return {'message': "A product with name '{}' already exists.".format(name)}, 400
@@ -37,6 +45,8 @@ class Product(Resource):
 
         return product.json(), 201
 
+    @jwt_required
+    @make_secure("admin")
     def delete(self, name):
         product = ProductModel.find_by_name(name)
         if product:
@@ -44,19 +54,6 @@ class Product(Resource):
             return {'message': 'product deleted.'}
         return {'message': 'product not found.'}, 404
 
-    def put(self, name):
-        data = Product.parser.parse_args()
-
-        product = ProductModel.find_by_name(name)
-
-        if product:
-            product.price = data['price']
-        else:
-            product = ProductModel(name, **data)
-
-        product.save_to_db()
-
-        return product.json()
 
 
 class ProductList(Resource):
