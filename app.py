@@ -17,6 +17,8 @@ from resources.user import UserRegister, UserLogin, TokenRefresh, UserLogout
 from resources.product import Product, ProductList
 from resources.shope import Shope, ShopeList
 from libraries import *
+from modifyFunctions import *
+
 
 app = Flask(__name__)
 
@@ -42,11 +44,11 @@ api = Api(app)
 def create_tables():
     db.create_all()
     # create the admin user
-    user = UserModel(str(uuid.uuid4()), "Al-Alloush","ahmad@al-alloush.com",Hashing_Password("1234"), "Admin")
+    user = UserModel(str(uuid.uuid4()), "Al-Alloush","ahmad@al-alloush.com",Hashing_Password("1234"), "admin")
     try:
         user.save_to_db()
         return {"message": "User created successfully."}, 201
-    except expression as ex:
+    except Exception as ex:
         return {"message": "Servir Error"}, 500
 
 # JWT provide an auth endpoint to verify the user, with this login return a token, 
@@ -143,6 +145,23 @@ class TestAuthentecation(Resource):
         id =get_jwt_identity()
         user = UserModel.find_by_id(get_jwt_identity())# get the identity from access tocken, here is user.id
         return {"message": f"get inside this post just after login and get a fresh token: {user.username}"}, 201
+
+    @jwt_required
+    @make_secure("user")
+    def put(slef):
+        # this function just for users permations
+        id =get_jwt_identity()
+        user = UserModel.find_by_id(get_jwt_identity())# get the identity from access tocken, here is user.id
+        return {"message": f"this function just for users permations: {user.username}"}, 201
+
+    
+    @fresh_jwt_required
+    @make_secure("admin")
+    def delete(slef):
+        # this function just for Admin permations
+        id =get_jwt_identity()
+        user = UserModel.find_by_id(get_jwt_identity())# get the identity from access tocken, here is user.id
+        return {"message": f"this function just for Admin permations: {user.username}"}, 201
 
 
 api.add_resource(TestAuthentecation, '/test')
