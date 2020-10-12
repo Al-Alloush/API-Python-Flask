@@ -15,12 +15,14 @@ class UserModel(db.Model):
     username = db.Column(db.String(50), unique=True)
     email = db.Column(db.String(16), unique=True)
     password = db.Column(db.String(80))
+    userType = db.Column(db.String(80))
 
-    def __init__(self, _id, username, email,  password):
+    def __init__(self, _id, username, email,  password, userType):
         self.id = _id
         self.username = username
         self.email = email
         self.password = password
+        self.userType = userType
     
     @classmethod
     def find_by_username(cls, username):

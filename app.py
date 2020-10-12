@@ -1,6 +1,8 @@
 from flask import Flask, jsonify
 from datetime import timedelta
 from flask_restful import Resource, Api
+import uuid
+from global_functions import Hashing_Password, Verify_Password
 #from flask_jwt import JWT, jwt_required
 from flask_jwt_extended import(
     JWTManager, 
@@ -39,6 +41,13 @@ api = Api(app)
 @app.before_first_request
 def create_tables():
     db.create_all()
+    # create the admin user
+    user = UserModel(str(uuid.uuid4()), "Al-Alloush","ahmad@al-alloush.com",Hashing_Password("1234"), "Admin")
+    try:
+        user.save_to_db()
+        return {"message": "User created successfully."}, 201
+    except expression as ex:
+        return {"message": "Servir Error"}, 500
 
 # JWT provide an auth endpoint to verify the user, with this login return a token, 
 # this token contains the user's Id and authentication code

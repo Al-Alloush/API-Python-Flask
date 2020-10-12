@@ -49,7 +49,7 @@ class UserRegister(Resource):
             return {"message": "this user is existing"}, 400
 
         # create an object from UserModel to save this user in database
-        user = UserModel(str(uuid.uuid4()), data["username"],data["email"],Hashing_Password(data["password"]))
+        user = UserModel(str(uuid.uuid4()), data["username"],data["email"],Hashing_Password(data["password"]), "user")
         
         try:
             user.save_to_db()
