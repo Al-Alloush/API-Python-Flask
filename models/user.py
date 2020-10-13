@@ -16,14 +16,18 @@ class UserModel(db.Model):
     email = db.Column(db.String(16), unique=True)
     password = db.Column(db.String(80))
     userType = db.Column(db.String(80))
+    email_active = db.Column(db.Boolean, default=False)
+    token = db.Column(db.String(80))
 
-    def __init__(self, _id, username, email,  password, userType):
+    def __init__(self, _id, username, email,  password, userType, email_active, token):
         self.id = _id
         self.username = username
         self.email = email
         self.password = password
         self.userType = userType
-    
+        self.email_active = email_active
+        self.token = token
+
     @classmethod
     def find_by_username(cls, username):
         return cls.query.filter_by(username=username).first() # SELECT * FROM users WHERE username = username LIMIT 1"
@@ -40,7 +44,21 @@ class UserModel(db.Model):
     @classmethod
     def find_by_id(cls, _id):
         return cls.query.filter_by(id=_id).first() # SELECT * FROM users WHERE id = _id LIMIT 1"
+     
     
+    @classmethod
+    def activate_account(cls, token):
+        try:
+            user = cls.query.filter_by(token=token).first() # SELECT * FROM users WHERE token = token LIMIT 1"
+            user.email_active = True
+            user.save_to_db()
+            return True
+        except Exception as ex:
+            return False
+        
+        return False
+
+
     def save_to_db(self):
         # add function work for both the insert and the update, updae if retrive an Id
         db.session.add(self)

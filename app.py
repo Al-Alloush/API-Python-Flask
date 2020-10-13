@@ -13,7 +13,7 @@ from flask_jwt_extended import(
 ) 
 from appsettings import *
 from models.user import UserModel
-from resources.user import UserRegister, UserLogin, TokenRefresh, UserLogout
+from resources.user import UserRegister, UserLogin, TokenRefresh, UserLogout, UserConfirm
 from resources.product import Product, ProductList
 from resources.shope import Shope, ShopeList
 from libraries import *
@@ -44,12 +44,22 @@ api = Api(app)
 def create_tables():
     db.create_all()
     # create the admin user
-    user = UserModel(str(uuid.uuid4()), "Al-Alloush","ahmad@al-alloush.com",Hashing_Password("1234"), "admin")
-    try:
-        user.save_to_db()
-        return {"message": "User created successfully."}, 201
-    except Exception as ex:
-        return {"message": "Servir Error"}, 500
+    existUser = UserModel.find_by_username("Al-Alloush")
+    if existUser is None:
+        user = UserModel(
+                            str(uuid.uuid4()), 
+                            "Al-Alloush",
+                            "ahmad@al-alloush.com",
+                            Hashing_Password("!QA1qa"), 
+                            "admin",
+                            True,
+                            Hashing_Password(str(uuid.uuid4()))
+                        )
+        try:
+            user.save_to_db()
+            return {"message": "User created successfully."}, 201
+        except Exception as ex:
+            return {"message": "Servir Error"}, 500
 
 # JWT provide an auth endpoint to verify the user, with this login return a token, 
 # this token contains the user's Id and authentication code
@@ -67,6 +77,7 @@ api.add_resource(UserLogout, '/logout')
 api.add_resource(Product, '/product/<string:name>')
 api.add_resource(ProductList, '/products')
 api.add_resource(TokenRefresh, '/refresh')
+api.add_resource(UserConfirm, '/user_confirm/<string:token>')
 
 # add claims to access token
 @jwt.user_claims_loader
